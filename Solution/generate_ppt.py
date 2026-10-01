@@ -50,25 +50,29 @@ slide("Problem", [
 ])
 
 slide("Approach", [
-    "• 5-step wizard: Profile → Loss Analysis → Risk → Plan → Ongoing Optimizer",
+    "• 5-step wizard: Rich Profile → Loss Analysis → Risk → Plan → Ongoing Optimizer",
+    "• Asks what real advice needs: age, income, expenses, dependents, goals, emergency fund",
     "• Every claim proven against REAL market data (yfinance, 12 live tickers)",
     "• Deterministic AI rule-engine — works offline, cannot crash on API outages",
-    "• Experience dial: explanation depth adapts Beginner / Intermediate / Experienced",
+    "• Advisory rules: 110−age glide path · goal buckets · emergency-fund gate ·",
+    "  risk capacity vs willingness (binding = min)",
     "• Built & verified by an agent workflow under 18 strict hackathon rules",
 ])
 
 slide("Solution", [
     "• Loss taxonomy detects: bought-at-peak, panic-sell, hype-chase, concentration…",
     "  with hard evidence (e.g. “entry within 0.8% of 90-day high”)",
+    "• DUAL PLAN: Recommended-for-you (profile-driven) + Build-your-own (live sliders,",
+    "  expected return vs worst-case trade-off, guard-rail warnings)",
     "• High-risk: aggressive picks w/ live momentum, volatility, drawdown + reasoning",
     "• Low-risk: SIP with 3/5/10y scenarios, seasonality chart, dip-window timing",
     "• Optimizer: dip → top-up amount, drift >5pp → rebalance, vol spike → hold",
 ])
 
 slide("Demo", [
-    "1. Enter profile: ₹5L, Experienced, held stocks",
+    "1. Rich intake: age 28, ₹80k income, goal 12y, risk willingness 4/5, budget ₹1L",
     "2. Loss: bought 2025-02-11 (peak!), exited 2025-03-13 (−8.8% dip) → AI explains",
-    "3. Risk: YES → aggressive plan, 4 live picks, pie allocation",
+    "3. Risk: YES → Recommended plan (76% equity, emergency-gate flag) vs Custom sliders",
     "4. Alternative: NO → SIP ₹10k/mo, 10y projection, best-month reminder",
     "5. Optimizer: live signals (“Crypto +32% → rebalance”)",
 ])
