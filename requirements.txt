@@ -1,0 +1,7 @@
+yfinance>=1.7.0
+pandas>=3.0
+numpy>=2.5
+streamlit>=1.64
+plotly>=7.0
+python-pptx>=1.0
+requests>=2.34
