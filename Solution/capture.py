@@ -12,6 +12,17 @@ async def wait_h(page, text, timeout=60000):
     await page.get_by_role("heading", name=re.compile(re.escape(text))).first.wait_for(timeout=timeout)
 
 
+async def wait_any(page, texts, timeout=60000):
+    """Poll until any of the heading texts appears; return the one that matched."""
+    deadline = asyncio.get_event_loop().time() + timeout / 1000
+    while asyncio.get_event_loop().time() < deadline:
+        for t in texts:
+            if await page.get_by_role("heading", name=re.compile(re.escape(t))).count():
+                return t
+        await page.wait_for_timeout(500)
+    raise TimeoutError(f"none of {texts} appeared")
+
+
 async def shot(page, name, settle=1500):
     await page.wait_for_timeout(settle)
     await page.screenshot(path=os.path.join(OUT, name), full_page=False)
@@ -29,23 +40,24 @@ async def main():
         # ---------- PATH A: rich profile + loss + YES ----------
         await page.goto(BASE, wait_until="networkidle")
         await wait_h(page, "Tell us about you")
-        # rich intake
-        await page.get_by_label("Age", exact=True).fill("28")
-        await page.get_by_label("Monthly income (₹)").fill("80000")
-        await page.get_by_label("Monthly expenses (₹)").fill("45000")
-        await page.get_by_label("Emergency fund saved (₹)").fill("15000")
-        await page.get_by_label("Existing investments (₹)").fill("50000")
-        await page.get_by_label("Investment budget — lumpsum (₹)").fill("100000")
-        await page.get_by_label("What have you held before? (stocks / gold / crypto / mutual funds…)").fill("stocks, gold")
+        # rich intake (role-based selectors to dodge help-button label collisions)
+        await page.get_by_role("spinbutton", name="Age").fill("28")
+        await page.get_by_role("spinbutton", name="Monthly income (₹)").fill("80000")
+        await page.get_by_role("spinbutton", name="Monthly expenses (₹)").fill("45000")
+        await page.get_by_role("spinbutton", name="Emergency fund saved (₹)").fill("15000")
+        await page.get_by_role("spinbutton", name="Existing investments (₹)").fill("50000")
+        await page.get_by_role("spinbutton", name="Investment budget — lumpsum (₹)").fill("100000")
+        await page.get_by_role("textbox", name="What have you held before? (stocks / gold / crypto / mutual funds…)").fill("stocks, gold")
         # loss section
         await page.get_by_text("I've taken a loss before").click()
         await page.wait_for_timeout(700)
-        await page.get_by_label("Asset you lost money on").fill("crypto")
-        await page.get_by_label("Amount lost (₹)").fill("80000")
-        await page.get_by_label("Rough buy date").fill("2025-02-11")
-        await page.get_by_label("Rough exit date").fill("2025-03-13")
-        await page.get_by_label("Why do you think it happened?").fill(
+        await page.get_by_role("textbox", name="Asset you lost money on").fill("crypto")
+        await page.get_by_role("spinbutton", name="Amount lost (₹)").fill("80000")
+        await page.get_by_role("textbox", name="Rough buy date").fill("2025-02-11")
+        await page.get_by_role("textbox", name="Rough exit date").fill("2025-03-13")
+        await page.get_by_role("textbox", name="Why do you think it happened?").fill(
             "bought after hype on twitter, panic-sold during the crash")
+        await page.keyboard.press("Tab")  # blur → commit number/text values to Streamlit state
         await shot(page, "step1_profile.png", 1000)
         await page.get_by_role("button", name="Continue →").click()
         await wait_h(page, "Let's learn what happened")
@@ -74,12 +86,17 @@ async def main():
         # ---------- PATH B: no loss → safe SIP ----------
         await page.get_by_role("button", name="Start over").click()
         await wait_h(page, "Tell us about you")
-        await page.get_by_label("Age", exact=True).fill("35")
-        await page.get_by_label("Monthly income (₹)").fill("120000")
-        await page.get_by_label("Monthly expenses (₹)").fill("70000")
-        await page.get_by_label("Emergency fund saved (₹)").fill("300000")
+        await page.get_by_role("spinbutton", name="Age").fill("35")
+        await page.get_by_role("spinbutton", name="Monthly income (₹)").fill("120000")
+        await page.get_by_role("spinbutton", name="Monthly expenses (₹)").fill("70000")
+        await page.get_by_role("spinbutton", name="Emergency fund saved (₹)").fill("300000")
+        await page.keyboard.press("Tab")
         await page.get_by_role("button", name="Continue →").click()
-        await wait_h(page, "One question that steers")   # no loss → skips step 2
+        landed = await wait_any(page, ["One question that steers", "Let's learn what happened"])
+        if landed.startswith("Let's"):
+            await shot(page, "step2_skip_note.png")
+            await page.get_by_role("button", name="Continue to risk choice →").click()
+            await wait_h(page, "One question that steers")
         await page.get_by_role("button", name="No — keep it safe").click()
         await wait_h(page, "Here it is — your personalized")
         await page.wait_for_timeout(4000)

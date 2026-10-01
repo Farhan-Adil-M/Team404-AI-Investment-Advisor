@@ -524,6 +524,7 @@ if STEP == 1:
             "dependents": dependents, "employment": st.session_state["in_employment"],
             "goal": st.session_state["in_goal"], "horizon_years": float(st.session_state["in_horizon"]),
             "existing_investments": float(st.session_state["in_existing"]),
+            "emergency_fund": float(st.session_state["in_emergency"]),
             "risk_willingness": int(st.session_state["in_willingness"]),
             "budget": float(st.session_state["in_budget"]),
             "experience": st.session_state["in_experience"],

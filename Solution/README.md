@@ -83,3 +83,4 @@ not promises, not investment advice.
 - `DESIGN.md` — architecture & problem-fit traceability
 - `RESEARCH.md` — researcher-agent findings (yfinance, finance logic, model selection)
 - `SUBMISSION_CHECKLIST.md` — ZIP completeness tracker
+- **Repository:** https://github.com/Farhan-Adil-M/Team404-AI-Investment-Advisor
