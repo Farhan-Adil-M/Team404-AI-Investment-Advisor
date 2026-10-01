@@ -1,6 +1,6 @@
 """capture.py — walks the live app UI and screenshots all 5 steps (both plan paths).
 Run: python capture.py  (app must be running on :8501)  → shots/stepN_*.png"""
-import asyncio, os, sys
+import asyncio, os, re, sys
 from playwright.async_api import async_playwright
 
 BASE = "http://localhost:8501"
@@ -9,7 +9,7 @@ os.makedirs(OUT, exist_ok=True)
 
 
 async def wait_header(page, text, timeout=45000):
-    await page.get_by_role("heading", name=lambda n: text in n).first.wait_for(timeout=timeout)
+    await page.get_by_role("heading", name=re.compile(re.escape(text))).first.wait_for(timeout=timeout)
 
 
 async def shot(page, name):
