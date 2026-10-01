@@ -9,7 +9,7 @@ Hard stop: **4:30 PM IST** · Target ZIP complete: **4:20 PM** · Verify locally
 | 3 | PPT/PDF — Problem → Approach → Solution → Demo → Impact | [x] Team404_Deck.pptx (5 slides) |
 | 4 | Screenshots (PNG/JPG) of working app | [x] shots/ (6 PNG: all 5 steps + SIP path) |
 | 5 | Required files/assets (requirements.txt, config) | [x] |
-| 6 | Run instructions — step-by-step, clean-machine tested | [x] (clean-run test pending) |
+| 6 | Run instructions — step-by-step, clean-machine tested | [x] fresh venv from ZIP → HTTP 200 |
 | 7 | Demo / repository link | [ ] ← needs GitHub auth |
 | 8 | Team details — Team404: A.kruthika, Shaik Zeeshan, M. Farhan Adil, M. Noel | [x] |
 
