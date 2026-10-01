@@ -312,12 +312,14 @@ def style_fig(fig, height: int = 330):
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", height=height,
         font=dict(family="Inter, sans-serif", color=TEXT, size=12),
-        margin=dict(t=34, b=14, l=10, r=10),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, font=dict(size=11)),
+        margin=dict(t=40, b=64, l=10, r=10),
+        # legend BELOW the plot area — title/legend can never overlap (text-overlap fix)
+        legend=dict(orientation="h", yanchor="top", y=-0.16, xanchor="left", x=0,
+                    font=dict(size=11)),
         hoverlabel=dict(bgcolor=SURFACE, bordercolor="rgba(255,255,255,0.15)", font=dict(color=TEXT)),
     )
-    fig.update_xaxes(showgrid=False, zeroline=False, color=MUTED)
-    fig.update_yaxes(gridcolor="rgba(255,255,255,0.07)", zeroline=False, color=MUTED)
+    fig.update_xaxes(showgrid=False, zeroline=False, color=MUTED, automargin=True)
+    fig.update_yaxes(gridcolor="rgba(255,255,255,0.07)", zeroline=False, color=MUTED, automargin=True)
     return fig
 
 
@@ -683,6 +685,16 @@ elif STEP == 4:
 
     # ---------- tab 1: recommended ----------
     with tab_rec:
+        # "what to buy" sits DIRECTLY under the return-% metrics row (user directive)
+        st.markdown("#### 🧰 What to actually buy")
+        instr_cols = st.columns(min(3, max(1, len(plan["instruments"]))))
+        for idx, (sleeve, items) in enumerate(plan["instruments"].items()):
+            with instr_cols[idx % len(instr_cols)]:
+                color = SLICE_COLORS.get(sleeve, MUTED)
+                items_html = "".join(f'<div class="t4-row"><div class="t4-row-icon">›</div><div>{it}</div></div>' for it in items)
+                st.markdown(f'<div class="t4-card"><h4 style="color:{color}">{sleeve.capitalize()} · '
+                            f'{plan["allocation"].get(sleeve, 0)}%</h4>{items_html}</div>', unsafe_allow_html=True)
+
         left, right = st.columns([1.1, 1])
         with left:
             st.markdown("#### 🧠 How we got here")
@@ -733,14 +745,6 @@ elif STEP == 4:
             note("t4-ok", f"<b>Emergency fund funded ✅</b> — {emg['months']} months of expenses covered "
                           f"({inr(emg['target'])} target). Your full {inr(plan['monthly_invest'])}/mo can go to work.")
 
-        st.markdown("#### 🧰 What to actually buy")
-        instr_cols = st.columns(min(3, max(1, len(plan["instruments"]))))
-        for idx, (sleeve, items) in enumerate(plan["instruments"].items()):
-            with instr_cols[idx % len(instr_cols)]:
-                color = SLICE_COLORS.get(sleeve, MUTED)
-                items_html = "".join(f'<div class="t4-row"><div class="t4-row-icon">›</div><div>{it}</div></div>' for it in items)
-                st.markdown(f'<div class="t4-card"><h4 style="color:{color}">{sleeve.capitalize()} · '
-                            f'{plan["allocation"].get(sleeve, 0)}%</h4>{items_html}</div>', unsafe_allow_html=True)
         note("t4-info", f"<b>Assumptions:</b> long-run rates equity 12% · debt 8% · gold 9% · crypto 15% · cash 6% "
                         f"(illustrative). Worst-case drawdowns per sleeve are blended into your figure above. "
                         f"{DISCLAIMER}")
@@ -777,6 +781,11 @@ elif STEP == 4:
             ("Monthly / lumpsum", f"{inr(st.session_state['c_monthly'])} + {inr(st.session_state['c_lumpsum'])}",
              "your deployment", ""),
         ])
+        # "what to buy" DIRECTLY under the return-% metrics (user directive)
+        st.markdown("#### 🧰 What to actually buy for this mix")
+        for sleeve, items in custom["instruments"].items():
+            st.markdown(f'<div class="t4-row"><div class="t4-row-icon">🔹</div>'
+                        f'<div><b>{sleeve.capitalize()}</b> — {", ".join(items)}</div></div>', unsafe_allow_html=True)
         note("t4-info", f"⚖️ <b>Trade-off:</b> {custom['tradeoff']}")
         for w in custom["warnings"]:
             kind = "t4-ok" if w.endswith("✅") else "t4-warn"
@@ -787,11 +796,6 @@ elif STEP == 4:
                      [SLICE_COLORS[k] for k, v in custom["allocation"].items() if v > 0],
                      "Your custom allocation")
         chart(cdon, "custom_donut")
-
-        st.markdown("#### 🧰 Instruments for your mix")
-        for sleeve, items in custom["instruments"].items():
-            st.markdown(f'<div class="t4-row"><div class="t4-row-icon">🔹</div>'
-                        f'<div><b>{sleeve.capitalize()}</b> — {", ".join(items)}</div></div>', unsafe_allow_html=True)
 
     # ---------- tab 3: problem-required variant ----------
     with tab_variant:
@@ -848,6 +852,23 @@ elif STEP == 4:
                       "3y": inr(v["3y"]), "5y": inr(v["5y"]), "10y": inr(v["10y"]),
                       "Invested (10y)": inr(v["invested"])} for k, v in sp["scenarios"].items()]
             st.dataframe(pd.DataFrame(srows), width="stretch", hide_index=True)
+
+            # "what to buy" DIRECTLY below the return-% scenarios table (user directive)
+            st.markdown("#### 🧰 What to actually buy")
+            st.caption("Your low-risk shopping list — automate the first line on payday, "
+                       "then let the SIP do the boring part.")
+            sip_mix = rec.allocation(exp, False)  # safe mix, tuned to experience
+            skey = {"Equity index (SIP)": "equity", "Bonds/Safe (BIL)": "debt", "Gold": "gold",
+                    "Crypto": "crypto", "Cash": "cash"}
+            active = [(lbl, p, skey[lbl]) for lbl, p in sip_mix.items() if p > 0]
+            bcols = st.columns(len(active))
+            for ci, (lbl, p, key) in enumerate(active):
+                items = P.INSTRUMENTS.get(key, [])
+                items_html = "".join(f'<div class="t4-row"><div class="t4-row-icon">›</div>'
+                                     f'<div>{it}</div></div>' for it in items)
+                with bcols[ci]:
+                    st.markdown(f'<div class="t4-card"><h4 style="color:{SLICE_COLORS.get(key, MUTED)}">'
+                                f'{lbl} · {p}%</h4>{items_html}</div>', unsafe_allow_html=True)
 
             months = list(sp["seasonality"].keys())
             vals = [v * 100 for v in sp["seasonality"].values()]
