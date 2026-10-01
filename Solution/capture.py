@@ -8,6 +8,12 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shots")
 os.makedirs(OUT, exist_ok=True)
 
 
+async def sfill(page, role, name, value):
+    """Fill a widget then let Streamlit's rerun settle (avoids lost-change races)."""
+    await page.get_by_role(role, name=name).fill(value)
+    await page.wait_for_timeout(600)
+
+
 async def wait_h(page, text, timeout=60000):
     await page.get_by_role("heading", name=re.compile(re.escape(text))).first.wait_for(timeout=timeout)
 
@@ -40,23 +46,23 @@ async def main():
         # ---------- PATH A: rich profile + loss + YES ----------
         await page.goto(BASE, wait_until="networkidle")
         await wait_h(page, "Tell us about you")
-        # rich intake (role-based selectors to dodge help-button label collisions)
-        await page.get_by_role("spinbutton", name="Age").fill("28")
-        await page.get_by_role("spinbutton", name="Monthly income (₹)").fill("80000")
-        await page.get_by_role("spinbutton", name="Monthly expenses (₹)").fill("45000")
-        await page.get_by_role("spinbutton", name="Emergency fund saved (₹)").fill("15000")
-        await page.get_by_role("spinbutton", name="Existing investments (₹)").fill("50000")
-        await page.get_by_role("spinbutton", name="Investment budget — lumpsum (₹)").fill("100000")
-        await page.get_by_role("textbox", name="What have you held before? (stocks / gold / crypto / mutual funds…)").fill("stocks, gold")
+        # rich intake (role-based selectors + settle waits: rapid fills race Streamlit reruns)
+        await sfill(page, "spinbutton", "Age", "28")
+        await sfill(page, "spinbutton", "Monthly income (₹)", "80000")
+        await sfill(page, "spinbutton", "Monthly expenses (₹)", "45000")
+        await sfill(page, "spinbutton", "Emergency fund saved (₹)", "15000")
+        await sfill(page, "spinbutton", "Existing investments (₹)", "50000")
+        await sfill(page, "spinbutton", "Investment budget — lumpsum (₹)", "100000")
+        await sfill(page, "textbox", "What have you held before? (stocks / gold / crypto / mutual funds…)", "stocks, gold")
         # loss section
         await page.get_by_text("I've taken a loss before").click()
-        await page.wait_for_timeout(700)
-        await page.get_by_role("textbox", name="Asset you lost money on").fill("crypto")
-        await page.get_by_role("spinbutton", name="Amount lost (₹)").fill("80000")
-        await page.get_by_role("textbox", name="Rough buy date").fill("2025-02-11")
-        await page.get_by_role("textbox", name="Rough exit date").fill("2025-03-13")
-        await page.get_by_role("textbox", name="Why do you think it happened?").fill(
-            "bought after hype on twitter, panic-sold during the crash")
+        await page.wait_for_timeout(1000)
+        await sfill(page, "textbox", "Asset you lost money on", "crypto")
+        await sfill(page, "spinbutton", "Amount lost (₹)", "80000")
+        await sfill(page, "textbox", "Rough buy date", "2025-02-11")
+        await sfill(page, "textbox", "Rough exit date", "2025-03-13")
+        await sfill(page, "textbox", "Why do you think it happened?",
+                    "bought after hype on twitter, panic-sold during the crash")
         await page.keyboard.press("Tab")  # blur → commit number/text values to Streamlit state
         await shot(page, "step1_profile.png", 1000)
         await page.get_by_role("button", name="Continue →").click()
@@ -68,6 +74,14 @@ async def main():
         await page.get_by_role("button", name="Yes — go aggressive").click()
         await wait_h(page, "Here it is — your personalized")
         await page.wait_for_timeout(4000)  # charts + balloons settle
+        # DATA ASSERTION (rule #5): profile values must reach the plan intact
+        body = await page.inner_text("body")
+        good = "short by ₹120,000" in body or "₹120,000 short of" in body
+        bad = "short by ₹135,000" in body or "₹135,000 short of" in body
+        if not good or bad:
+            m = re.findall(r"[^\n]*short[^\n]*", body)
+            raise AssertionError(f"emergency-fund mapping broken: {m[:3]}")
+        print("assert: emergency shortfall ₹120,000 reaches the UI ✅")
         await shot(page, "step4_recommended.png", 2000)
         # custom tab
         await page.get_by_role("tab", name=re.compile("Build your own")).click()
@@ -86,10 +100,10 @@ async def main():
         # ---------- PATH B: no loss → safe SIP ----------
         await page.get_by_role("button", name="Start over").click()
         await wait_h(page, "Tell us about you")
-        await page.get_by_role("spinbutton", name="Age").fill("35")
-        await page.get_by_role("spinbutton", name="Monthly income (₹)").fill("120000")
-        await page.get_by_role("spinbutton", name="Monthly expenses (₹)").fill("70000")
-        await page.get_by_role("spinbutton", name="Emergency fund saved (₹)").fill("300000")
+        await sfill(page, "spinbutton", "Age", "35")
+        await sfill(page, "spinbutton", "Monthly income (₹)", "120000")
+        await sfill(page, "spinbutton", "Monthly expenses (₹)", "70000")
+        await sfill(page, "spinbutton", "Emergency fund saved (₹)", "300000")
         await page.keyboard.press("Tab")
         await page.get_by_role("button", name="Continue →").click()
         landed = await wait_any(page, ["One question that steers", "Let's learn what happened"])
