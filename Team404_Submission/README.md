@@ -13,28 +13,37 @@ it happened or how to move forward.
 A single integrated, web-based AI advisor that walks a user through **five steps**, using **real
 market data (yfinance)** at every stage:
 
-1. **Profile input** — budget, experience (Beginner/Intermediate/Experienced), prior-asset background
+1. **Profile input (rich intake)** — age, monthly income & expenses, dependents, emergency fund,
+   employment stability, goal + time horizon, existing investments, risk willingness (1–5), plus
+   the core fields: investment budget, experience (Beginner/Intermediate/Experienced),
+   prior-asset background, and optional past-loss details. *(We ask what proper advice needs —
+   age and income included — not just what the brief listed.)*
 2. **AI background & loss analysis** — if a past loss is described, the engine matches the user's
    dates/asset against real price history and explains the *proven* reason ("you bought within
    0.8% of the 90-day high", "you exited 8.8% below the 30-day high") in beginner language,
    dialled to their experience level
-3. **Risk assessment** — "Willing to take high risk for higher returns? Yes/No", cross-checked
-   against experience (a Beginner saying Yes is moderated — *enthusiasm ≠ capacity*)
-4. **Personalized recommendation**
-   - **High risk:** aggressive picks (real tickers, live price/momentum/volatility/drawdown) with
-     per-pick reasoning and sized amounts
-   - **Low risk:** safe SIP plan with 3/5/10-year projections across three honest scenarios,
-     a best-time-to-invest reminder, and hand-holding matched to experience
+3. **Risk assessment** — "Willing to take high risk for higher returns? Yes/No", combined with the
+   1–5 willingness score using the **risk capacity vs willingness** rule (binding = min of the two;
+   a Beginner saying Yes is moderated — *enthusiasm ≠ capacity*)
+4. **Personalized recommendation — dual plan**
+   - **Recommended for you:** profile-driven allocation (110−age equity glide path, goal buckets,
+     emergency-fund gating, SIP capacity) with step-by-step reasoning, flags (insurance, emergency
+     shortfall) and instrument suggestions
+   - **Build your own:** custom sliders (equity/debt/gold/crypto/cash) with live expected-return,
+     worst-case drawdown, trade-off line and guard-rail warnings
+   - **High risk:** aggressive picks (real tickers, live momentum/volatility/drawdown) with
+     per-pick reasoning · **Low risk:** SIP with 3/5/10-year scenarios, best-time-to-invest
+     reminder and experience-matched hand-holding
 5. **Ongoing optimizer** — monthly signals from live data: dip → top-up suggestion with amounts,
    allocation drift >5pp → rebalance, volatility spike → pause lumpsum
 
 ### Feature → problem-step fit map
 | Problem step | Where it lives |
 |---|---|
-| Step 1 Profile | `app.py` wizard step 1 |
+| Step 1 Profile | `app.py` wizard step 1 (rich intake → `engine/planner.py` rules) |
 | Step 2 Loss analysis | `engine/loss_analyzer.py` (taxonomy: PEAK_BUY, PANIC_SELL, HYPE_CHASE, CONCENTRATION, HOLD_THROUGH_CRASH, MISMATCH_RISK) |
-| Step 3 Risk question | `app.py` wizard step 3 + risk matrix in `engine/recommender.py` |
-| Step 4 Recommendation | `engine/recommender.py` (high-risk) · `engine/sip.py` (low-risk SIP) |
+| Step 3 Risk question | `app.py` wizard step 3 + risk matrix in `engine/recommender.py` + capacity/willingness binding in `engine/planner.py` |
+| Step 4 Recommendation | `engine/planner.py` (recommended + custom dual plan) · `engine/recommender.py` (high-risk) · `engine/sip.py` (low-risk SIP) |
 | Step 5 Optimizer | `engine/optimizer.py` |
 | Real market data | `engine/market.py` (yfinance with retry + clearly-labeled simulated fallback) |
 
@@ -74,3 +83,4 @@ not promises, not investment advice.
 - `DESIGN.md` — architecture & problem-fit traceability
 - `RESEARCH.md` — researcher-agent findings (yfinance, finance logic, model selection)
 - `SUBMISSION_CHECKLIST.md` — ZIP completeness tracker
+- **Repository:** https://github.com/Farhan-Adil-M/Team404-AI-Investment-Advisor

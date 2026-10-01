@@ -38,6 +38,31 @@ All free tiers are "limited time" — no expiry guarantees. Heavy models remain 
 - **Optimizer signals:** dip trigger ≤−5% vs last check → top-up 10-20% in 2-3 tranches · drift >5pp →
   rebalance · vol spike >22% → pause lumpsum · YTD<0 + SIP active → step-up nudge.
 
+## R5 — AI finance advisory domain (intake upgrade, spawn `longcat-2.5-preview-free`)
+
+- **Top intake fields (beyond the PDF's):** age, monthly income, monthly expenses, dependents,
+  emergency fund, employment stability, goal + horizon, existing investments, risk willingness 1-5,
+  tax slab. Each changes advice (verified: Betterment/Wealthfront/PocketGuard onboarding asks these).
+- **Rule mappings adopted in `engine/planner.py`:** equity anchor = **110 − age** (target-date
+  default; 100-rule outdated) · 50/30/20 → SIP capacity (20-40% of income) · emergency gate:
+  3 (no dependents) / 6 months expenses, **fund before investing** · goal buckets
+  (<3y conservative → 15y+ equity-heavy) · **binding risk = min(capacity, willingness)**.
+- **Recommended + Custom pattern (Wealthfront/Betterment):** quiz → instant recommended plan →
+  customize sliders → live trade-off ("+2% expected but −35% worst year") + guard warnings.
+- **Persona validation:** 28yo ₹80k → 76/2/10/2/10 Balanced w/ emergency gate ·
+  45yo freelance 2 dependents → capacity2 < willingness4 → 40/40/10/0/10 Moderately Conservative.
+
+## R6 — Fintech UX design spec (spawn `nemotron-3.5-lightning-free`)
+
+- **Palette adopted:** Deep Navy + Emerald — bg `#0B1D32`, surface `#162D4A`, text `#F4F6F8`,
+  muted `#A0AEC0`, accent `#00C853`, danger `#D13438` (Stripe-like premium feel; NOT hackathon
+  purple/cyan — user directive A4). Scenario colors navy→emerald→gold.
+- **Typography:** Inter (body/numbers) + Sora (headings) via Google Fonts @import.
+- **Patterns:** animated gradient hero · custom 5-step progress rail · one-decision-per-screen
+  cards · glassmorphism summary cards · count-up big numbers · `st.balloons()` on plan generation ·
+  stacked area contribution-vs-growth projection chart · max 3 charts/screen · Indian ₹ lakh
+  formatting (₹12.5L).
+
 ## Orchestrator validations (live)
 - SPY 2y: drawdown −18.76%, vol 16.54%, CAGR 17.18% ✓
 - Peak detection: 2025-02-11 within 0.8% of 90d high ✓ · Panic: 2025-03-13 −8.8% pre-exit ✓

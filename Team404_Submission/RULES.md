@@ -67,3 +67,21 @@ next efficient model, never a banned one, and logs it here.
 
 **Master priority order (invariants):** run-live > feature-complete > real-data honesty >
 UI polish > deck/docs. When time runs out, cut from the bottom.
+
+## E. AMENDMENTS (user directives, post-phase-start)
+
+- **A1 (≈1:45 PM): FRONTEND REBUILD** — v1 UI rejected ("ass"). Rebuild required:
+  interactive, elaborative, visually appealing, engaging, with an actual flow following the
+  problem's 5 steps. Researcher spawns R5 (AI-finance advisory domain) + R6 (fintech UX) precede it.
+- **A2: RICHER INTAKE** — the app must first ask *proper* details (age, income, employment,
+  goals, horizon, dependents, emergency fund, existing investments…), then produce
+  **a recommended plan AND a custom/self-built plan** if the user wants one. PDF fields are
+  the floor, not the ceiling.
+- **A3: MODEL EXCEPTION** — user approved **`opencode-go/mimo-v2.6-pro`** ($0.435/$0.87) for the
+  frontend rebuild ("good model" request; kimi-k3 requested but superseded by efficiency
+  recommendation). Rule #15 threshold temporarily amended to ≤ $0.50/M input for this spawn only.
+- **A4: VISUAL DIRECTION** — mix of dark fintech glass + clean minimal; **professional finance
+  palette, NOT the hackathon purple/cyan theme**. (R6 delivers palettes; user picks implicitly
+  from "premium fintech" direction.)
+- **A5: REPO** — public repo live: https://github.com/Farhan-Adil-M/Team404-AI-Investment-Advisor
+  (submission item 7 ✅, authenticated as Farhan-Adil-M via `gh`).

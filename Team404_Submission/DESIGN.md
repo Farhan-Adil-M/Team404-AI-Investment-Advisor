@@ -8,11 +8,16 @@ analysis + templated natural-language explanations. Real market data via yfinanc
 
 | Problem Step | Module | File |
 |---|---|---|
-| 1 Profile input | `profile` (budget, experience, background, loss details) | `app.py` (step 1) |
+| 1 Profile input | rich intake (age/income/goals/willingness + budget/experience/background/loss) | `app.py` (step 1) → `engine/planner.py` rules |
 | 2 AI background & loss analysis | `loss_analyzer` — detect cause from market data | `engine/loss_analyzer.py` |
-| 3 Risk assessment | Yes/No + experience cross-check | `app.py` (step 3) |
-| 4 Personalized recommendation | `recommender` (high-risk) / `sip_planner` (low-risk) | `engine/recommender.py`, `engine/sip.py` |
+| 3 Risk assessment | Yes/No + capacity-vs-willingness binding (`min()` rule) | `app.py` (step 3) + `planner.risk_profile` |
+| 4 Personalized recommendation | `planner` (recommended + custom dual plan) / `recommender` (high-risk) / `sip_planner` (low-risk) | `engine/planner.py`, `engine/recommender.py`, `engine/sip.py` |
 | 5 Ongoing optimizer | `optimizer` — monthly signals from live data | `engine/optimizer.py` |
+
+**Planner rules (R5 research):** 110−age equity glide (clamp 30–90%) · goal buckets
+(<3y / 3-7y / 7-15y / 15y+) · SIP capacity 20–40% of income · emergency-fund gate (3/6 months,
+fund-before-invest) · risk binding = min(capacity, willingness) · custom-plan guard warnings ·
+illustrative rates equity 12% / debt 8% / gold 9% / crypto 15% / cash 6% (labeled assumptions).
 
 ## Data layer (`engine/market.py`)
 - `fetch(sym, period)` → DataFrame, 3-retry w/ backoff; on total failure → returns `None` and UI
