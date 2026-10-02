@@ -390,28 +390,34 @@ st.session_state.setdefault("analysis", None)
 st.session_state.setdefault("risk", None)
 st.session_state.setdefault("celebrated", False)
 
-STEP = st.session_state["step"]
+# ============================== sub-page guard ==============================
+# When Streamlit serves a page from pages/ (e.g. /Portfolios), the main script still
+# runs first — so we neutralize the wizard (STEP=0 matches no branch) and skip the
+# sidebar/hero/rail. The page then renders alone with our shared CSS intact.
+ON_SUBPAGE = bool(getattr(getattr(st, "context", None), "page_script_path", None))
+STEP = 0 if ON_SUBPAGE else st.session_state["step"]
 
 # ============================== sidebar ==============================
-with st.sidebar:
-    st.markdown('<div class="t4-kicker">TEAM404 · MATRIX HACKATHON 2026</div>', unsafe_allow_html=True)
-    st.markdown("## 🧭 DataNexus Advisor")
-    st.caption("DRKVSRIT × Data Science · an honest, data-driven investment companion.")
-    st.markdown(f'<div class="t4-card"><div class="t4-small">Built on live market data via yfinance. '
-                f'If a fetch fails, the fallback is <b>clearly labelled “simulated”</b> — we never '
-                f'pass invented numbers off as real.</div></div>', unsafe_allow_html=True)
-    try:
-        _p, _src = _last_price("SPY")
-        st.markdown(f'<div style="margin:10px 0">{src_badge(_src)} &nbsp; <b>SPY</b> ${_p:,.2f}</div>',
-                    unsafe_allow_html=True)
-    except Exception:
-        st.caption("Market data: temporarily unavailable")
-    st.divider()
-    st.caption(DISCLAIMER)
+if not ON_SUBPAGE:
+    with st.sidebar:
+        st.markdown('<div class="t4-kicker">TEAM404 · MATRIX HACKATHON 2026</div>', unsafe_allow_html=True)
+        st.markdown("## 🧭 DataNexus Advisor")
+        st.caption("DRKVSRIT × Data Science · an honest, data-driven investment companion.")
+        st.markdown(f'<div class="t4-card"><div class="t4-small">Built on live market data via yfinance. '
+                    f'If a fetch fails, the fallback is <b>clearly labelled “simulated”</b> — we never '
+                    f'pass invented numbers off as real.</div></div>', unsafe_allow_html=True)
+        try:
+            _p, _src = _last_price("SPY")
+            st.markdown(f'<div style="margin:10px 0">{src_badge(_src)} &nbsp; <b>SPY</b> ${_p:,.2f}</div>',
+                        unsafe_allow_html=True)
+        except Exception:
+            st.caption("Market data: temporarily unavailable")
+        st.divider()
+        st.caption(DISCLAIMER)
 
-# ============================== hero + rail ==============================
-hero()
-rail(STEP)
+    # ============================== hero + rail ==============================
+    hero()
+    rail(STEP)
 
 # ============================== STEP 1 · PROFILE ==============================
 if STEP == 1:
